@@ -1,0 +1,22 @@
+# Build output
+**/bin/
+**/obj/
+
+# Visual Studio local state
+.vs/
+*.suo
+*.user
+*.csproj.user
+
+# Local secrets and environment files
+.env
+.env.*
+!*.example
+**/secrets.json
+**/*.secrets.json
+**/appsettings.*.local.json
+**/appsettings.Development.json
+
+# OS/editor files
+.DS_Store
+Thumbs.db

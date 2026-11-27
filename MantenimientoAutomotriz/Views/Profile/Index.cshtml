@@ -1,0 +1,43 @@
+@model MantenimientoAutomotriz.Controllers.PerfilViewModel
+
+@{
+    ViewData["Title"] = "Mi perfil";
+}
+
+<div class="container mt-4">
+    <h2>Mi perfil</h2>
+
+    @if (TempData["MensajeExito"] != null)
+    {
+        <div class="alert alert-success">@TempData["MensajeExito"]</div>
+    }
+
+    <form asp-action="ActualizarPerfil" method="post" class="card card-body shadow-sm mb-3">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="mb-3">
+            <label asp-for="NombreCompleto" class="form-label"></label>
+            <input asp-for="NombreCompleto" class="form-control" />
+            <span asp-validation-for="NombreCompleto" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" readonly />
+        </div>
+        <div class="mb-3">
+            <label asp-for="Rol" class="form-label"></label>
+            <input asp-for="Rol" class="form-control" readonly />
+        </div>
+        <div class="mb-3">
+            <label asp-for="FechaRegistro" class="form-label"></label>
+            <input value="@Model.FechaRegistro.ToLocalTime().ToString("dd/MM/yyyy HH:mm")" class="form-control" readonly />
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar datos</button>
+    </form>
+
+    <a asp-action="CambiarPassword" class="btn btn-outline-secondary">Cambiar contraseña</a>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

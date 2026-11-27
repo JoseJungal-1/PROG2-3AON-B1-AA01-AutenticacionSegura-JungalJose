@@ -1,0 +1,117 @@
+﻿@* Modelo devuelto por _usuarioAdminService.ObtenerTodosLosUsuariosAsync() *@
+@model IEnumerable<MantenimientoAutomotriz.Negocio.UsuarioConRolDto>
+
+@{
+    ViewData["Title"] = "Panel de Administración - Usuarios";
+}
+
+<div class="container mt-4">
+    @* Encabezado con contador total y botón para crear nuevo usuario *@
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-0">Gestión de Usuarios</h2>
+            <span class="badge bg-primary">Total: @(Model?.Count() ?? 0)</span>
+        </div>
+        <a asp-controller="Admin" asp-action="CrearUsuario" class="btn btn-success">
+            + Nuevo Usuario
+        </a>
+    </div>
+
+    @* Alertas vinculadas a TempData del controlador *@
+    @if (TempData["MensajeExito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["MensajeExito"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+    @if (TempData["MensajeError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["MensajeError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
+    @* Tabla responsiva de usuarios *@
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nombre Completo</th>
+                            <th>Correo Electrónico</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Fecha de registro (Ecuador)</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var usuario in Model)
+                            {
+                                <tr>
+                                    <td>@usuario.NombreCompleto</td>
+                                    <td>@usuario.Email</td>
+                                    <td>
+                                        @* Formulario POST hacia CambiarRol(userId, nuevoRol) *@
+                                        <form asp-controller="Admin" asp-action="CambiarRol" method="post" class="d-flex gap-2">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@usuario.Id" />
+                                            <select name="nuevoRol" class="form-select form-select-sm" style="width: auto;">
+                                                <option value="Administrador" selected="@(usuario.Rol == "Administrador")">Administrador</option>
+                                                <option value="Cliente" selected="@(usuario.Rol == "Cliente")">Cliente</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Guardar</button>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        @* Etiqueta del estado actual del usuario *@
+                                        @if (usuario.Activo)
+                                        {
+                                            <span class="badge bg-success">Activo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Inactivo</span>
+                                        }
+                                    </td>
+                                    <td>@usuario.FechaRegistro.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="text-end">
+                                        @* Formulario POST hacia CambiarEstado(userId, nuevoEstado) *@
+                                        <form asp-controller="Admin" asp-action="CambiarEstado" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@usuario.Id" />
+                                            <input type="hidden" name="nuevoEstado" value="@(!usuario.Activo ? "true" : "false")" />
+                                            
+                                            @if (usuario.Activo)
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Desactivar</button>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                                            }
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            @* Fila mostrada si no hay usuarios registrados *@
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    No hay usuarios registrados en el sistema.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
