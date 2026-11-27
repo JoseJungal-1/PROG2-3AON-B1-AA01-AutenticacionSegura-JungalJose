@@ -144,7 +144,7 @@ namespace MantenimientoAutomotriz.Negocio
 
             var rolesActuales = await _userManager.GetRolesAsync(usuario);
 
-            // Regla de seguridad de la rúbrica: evitar quitar rol Administrador si es el último activo
+            // No permite quitar el rol al último administrador activo.
             if (rolesActuales.Contains("Administrador") && nuevoRol != "Administrador")
             {
                 if (await EsUltimoAdministradorActivoAsync(usuario.Id))
@@ -159,7 +159,7 @@ namespace MantenimientoAutomotriz.Negocio
             if (!resultado.Succeeded)
                 return (false, "Ocurrió un error al actualizar el rol del usuario.");
 
-            // Actualiza el SecurityStamp para forzar reevaluación de permisos en su sesión
+            // Cambia el SecurityStamp para que Identity invalide la sesión al validarlo.
             await _userManager.UpdateSecurityStampAsync(usuario);
 
             return (true, $"Rol actualizado correctamente a '{nuevoRol}'.");
@@ -167,7 +167,7 @@ namespace MantenimientoAutomotriz.Negocio
 
         /// <summary>
         /// Habilita o deshabilita una cuenta de usuario.
-        /// Si se deshabilita, invalida inmediatamente cualquier sesión activa del usuario.
+        /// Al deshabilitarla, cambia su SecurityStamp para invalidar la sesión cuando Identity la valide.
         /// </summary>
         public async Task<(bool Exito, string Mensaje)> CambiarEstadoActivoAsync(string userId, bool nuevoEstado)
         {
@@ -190,7 +190,7 @@ namespace MantenimientoAutomotriz.Negocio
             if (!resultado.Succeeded)
                 return (false, "No se pudo actualizar el estado del usuario.");
 
-            // Si se desactiva la cuenta, rotar SecurityStamp invalida su cookie de sesión activa
+            // Al desactivar la cuenta, cambia el SecurityStamp para invalidar la sesión al validarla.
             if (!nuevoEstado)
             {
                 await _userManager.UpdateSecurityStampAsync(usuario);

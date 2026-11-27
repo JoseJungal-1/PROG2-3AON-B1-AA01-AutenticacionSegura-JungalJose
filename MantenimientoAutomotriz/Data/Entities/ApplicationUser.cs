@@ -4,9 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace MantenimientoAutomotriz.Data.Entities
 {
     /// <summary>
-    /// Entidad personalizada de usuario que extiende IdentityUser.
-    /// Permite almacenar datos adicionales requeridos por la rúbrica de seguridad
-    /// sin comprometer el manejo seguro de contraseñas y tokens de ASP.NET Core Identity.
+    /// Usuario de la aplicación con información adicional de perfil y estado.
     /// </summary>
     public class ApplicationUser : IdentityUser
     {

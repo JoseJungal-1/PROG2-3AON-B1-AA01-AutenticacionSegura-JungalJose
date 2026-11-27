@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configuración de la conexión a SQL Server
+// Configura la conexión a SQL Server.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -16,29 +16,29 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// 2. Configuración completa de ASP.NET Core Identity con ApplicationUser y Roles
+// Configura Identity para usuarios y roles.
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    // Política de contraseñas seguras (Punto 3 de la rúbrica)
+    // Requisitos para las contraseñas nuevas.
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 8;
 
-    // Bloqueo temporal por intentos fallidos (fuerza bruta)
+    // Bloquea temporalmente la cuenta después de varios intentos fallidos.
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     options.Lockout.MaxFailedAccessAttempts = 3;
     options.Lockout.AllowedForNewUsers = true;
 
-    // Configuración de usuario y confirmación
+    // Cada cuenta debe usar un correo único; no se exige confirmarlo para iniciar sesión.
     options.User.RequireUniqueEmail = true;
-    options.SignIn.RequireConfirmedAccount = false; // Permite ingreso inmediato tras registro (o true si configuras SMTP real)
+    options.SignIn.RequireConfirmedAccount = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// 3. Seguridad de Cookies de Sesión y Redirección de Acceso (Punto 4 y 6 de la rúbrica)
+// Configura la cookie y las rutas de autenticación.
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
@@ -47,13 +47,13 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
     options.SlidingExpiration = true;
 
-    // Rutas personalizadas para el controlador de Cuenta/Seguridad
+    // Rutas para iniciar sesión, cerrar sesión y mostrar acceso denegado.
     options.LoginPath = "/Auth/Login";
     options.LogoutPath = "/Auth/Logout";
     options.AccessDeniedPath = "/Auth/AccessDenied";
 });
 
-// 4. Registro de Servicios de la Capa de Negocio (Inyección de Dependencias)
+// Registra los servicios de autenticación y administración.
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UsuarioAdminService>();
 
@@ -61,10 +61,10 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// 5. Inicialización controlada de Roles y Administrador inicial (Seeding - Punto 5 de la rúbrica)
+// Aplica migraciones y prepara los roles y el administrador inicial.
 await DbInitializer.InitializeAsync(app.Services, app.Configuration);
 
-// 6. Configuración del pipeline HTTP
+// Configura el pipeline HTTP según el entorno.
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -76,11 +76,11 @@ else
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(); // Asegura compatibilidad de archivos estáticos
+app.UseStaticFiles();
 
 app.UseRouting();
 
-// ¡ORDEN OBLIGATORIO! Primero Authentication (quién eres), luego Authorization (qué permisos tienes)
+// Primero identifica al usuario y luego comprueba sus permisos.
 app.UseAuthentication();
 app.UseAuthorization();
 
